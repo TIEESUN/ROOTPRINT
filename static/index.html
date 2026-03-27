@@ -1,0 +1,1468 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta http-equiv="X-Content-Type-Options" content="nosniff"/>
+<meta http-equiv="X-Frame-Options" content="DENY"/>
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src 'self'; img-src 'self' data:; frame-ancestors 'none';"/>
+<title>ROOTPRINT // Threat Intelligence</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Barlow+Condensed:wght@400;600;700;900&family=Barlow:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+/* ── RESET & TOKENS ─────────────────────────────────────────── */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --black:#000;--bg:#080808;--bg2:#0f0f0f;--bg3:#141414;--bg4:#1a1a1a;
+  --border:#1c1c1c;--border2:#2a2a2a;
+  --red:#ff0033;--red-dim:#cc0029;--red-bg:rgba(255,0,51,.07);--red-glow:rgba(255,0,51,.22);
+  --orange:#ff4400;--yellow:#ff8800;--green:#44aa00;--blue:#33aaff;
+  --tg:#2AABEE;--tw:#1D9BF0;
+  --text:#e8e8e8;--muted:#555;--dim:#333;
+  --mono:'Share Tech Mono',monospace;
+  --display:'Barlow Condensed',sans-serif;
+  --body:'Barlow',sans-serif;
+  --radius:2px;
+}
+html{font-size:14px}
+body{background:var(--black);color:var(--text);font-family:var(--body);min-height:100vh;overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;z-index:9998;pointer-events:none;
+  background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.04) 2px,rgba(0,0,0,.04) 4px)}
+::-webkit-scrollbar{width:3px;height:3px}
+::-webkit-scrollbar-track{background:var(--black)}
+::-webkit-scrollbar-thumb{background:var(--red-dim)}
+code{font-family:var(--mono);font-size:.85em;color:var(--blue);background:rgba(51,170,255,.08);padding:1px 4px}
+a{color:var(--red);text-decoration:none}
+a:hover{text-decoration:underline}
+
+/* ── SHELL ──────────────────────────────────────────────────── */
+.shell{display:grid;grid-template-columns:210px 1fr;grid-template-rows:50px 1fr;min-height:100vh}
+
+/* ── TOPBAR ─────────────────────────────────────────────────── */
+.topbar{grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;
+  padding:0 20px;border-bottom:1px solid var(--border);background:var(--black);
+  position:sticky;top:0;z-index:100}
+.brand{display:flex;align-items:center;gap:10px;cursor:pointer}
+.brand-ico{width:26px;height:26px;border:1px solid var(--red);display:grid;
+  place-items:center;position:relative;flex-shrink:0}
+.brand-ico::before{content:'';position:absolute;width:12px;height:12px;
+  background:var(--red);clip-path:polygon(50% 0%,100% 100%,0% 100%)}
+.brand-name{font-family:var(--display);font-size:1rem;font-weight:700;
+  letter-spacing:.22em;text-transform:uppercase;color:var(--text)}
+.brand-name span{color:var(--red)}
+.topbar-mid{font-family:var(--mono);font-size:.65rem;color:var(--muted);letter-spacing:.08em}
+.topbar-mid .ts{color:var(--red)}
+.topbar-right{display:flex;align-items:center;gap:14px}
+.live-dot{display:flex;align-items:center;gap:5px;font-family:var(--mono);font-size:.6rem;color:var(--muted)}
+.dot{width:6px;height:6px;border-radius:50%;background:var(--red);
+  box-shadow:0 0 6px var(--red);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1;box-shadow:0 0 6px var(--red)}50%{opacity:.3;box-shadow:none}}
+.btn{font-family:var(--mono);font-size:.62rem;letter-spacing:.12em;text-transform:uppercase;
+  padding:6px 13px;border:1px solid var(--red);background:transparent;color:var(--red);
+  cursor:pointer;transition:background .15s,box-shadow .15s;border-radius:var(--radius)}
+.btn:hover{background:var(--red-bg);box-shadow:0 0 14px var(--red-glow)}
+.btn:active{background:var(--red);color:#000}
+.btn:disabled{opacity:.4;pointer-events:none}
+.btn.solid{background:var(--red);color:#000}.btn.solid:hover{background:var(--red-dim)}
+.btn.sm{padding:3px 9px;font-size:.55rem}
+.btn.ghost{border-color:var(--border2);color:var(--muted)}.btn.ghost:hover{border-color:var(--red);color:var(--red)}
+
+/* ── SIDEBAR ────────────────────────────────────────────────── */
+.sidebar{background:var(--bg);border-right:1px solid var(--border);
+  position:sticky;top:50px;height:calc(100vh - 50px);overflow-y:auto;
+  display:flex;flex-direction:column;padding:20px 0}
+.nav-sec{padding:0 14px;margin-bottom:24px}
+.nav-lbl{font-family:var(--mono);font-size:.55rem;color:var(--dim);
+  letter-spacing:.2em;text-transform:uppercase;padding:0 8px;margin-bottom:5px}
+.nav-item{display:flex;align-items:center;gap:9px;padding:7px 9px;
+  border-left:2px solid transparent;font-family:var(--display);font-weight:600;
+  font-size:.82rem;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);
+  cursor:pointer;transition:all .12s;margin-bottom:1px;user-select:none}
+.nav-item:hover{color:var(--text);border-left-color:var(--border2)}
+.nav-item.active{color:var(--red);border-left-color:var(--red);background:var(--red-bg)}
+.nav-item svg{width:13px;height:13px;flex-shrink:0}
+.nav-badge{margin-left:auto;font-family:var(--mono);font-size:.55rem;
+  background:var(--red-bg);color:var(--red);border:1px solid rgba(255,0,51,.2);padding:1px 5px}
+.sb-stats{margin-top:auto;padding:14px;border-top:1px solid var(--border)}
+.sb-row{display:flex;justify-content:space-between;padding:3px 0;
+  font-family:var(--mono);font-size:.6rem;color:var(--muted)}
+.sb-row .val{color:var(--text)}.sb-row .val.r{color:var(--red)}
+
+/* ── MAIN ───────────────────────────────────────────────────── */
+.main{background:var(--bg);overflow-y:auto;height:calc(100vh - 50px)}
+.view{display:none;padding:24px}
+.view.active{display:block}
+.ph{display:flex;align-items:flex-end;justify-content:space-between;
+  margin-bottom:20px;padding-bottom:14px;border-bottom:1px solid var(--border)}
+.pt{font-family:var(--display);font-weight:900;font-size:1.9rem;
+  letter-spacing:.04em;text-transform:uppercase;line-height:1}
+.pt span{color:var(--red)}
+.ps{font-family:var(--mono);font-size:.62rem;color:var(--muted);
+  margin-top:4px;letter-spacing:.08em}
+
+/* ── STAT CARDS ─────────────────────────────────────────────── */
+.sc-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px}
+.sc{background:var(--bg2);border:1px solid var(--border);padding:16px 18px;
+  position:relative;overflow:hidden;transition:border-color .2s}
+.sc::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:var(--border);transition:all .2s}
+.sc:hover::before{background:var(--red);box-shadow:0 0 8px var(--red-glow)}
+.sc.alert::before{background:var(--red)}.sc.alert{border-color:rgba(255,0,51,.18)}
+.sc-lbl{font-family:var(--mono);font-size:.55rem;color:var(--muted);
+  letter-spacing:.18em;text-transform:uppercase;margin-bottom:8px}
+.sc-val{font-family:var(--display);font-weight:900;font-size:2.2rem;line-height:1;color:var(--text)}
+.sc-val.r{color:var(--red);text-shadow:0 0 20px var(--red-glow)}
+.sc-sub{font-family:var(--mono);font-size:.58rem;color:var(--dim);margin-top:3px}
+
+/* ── FILTER BAR ─────────────────────────────────────────────── */
+.fbar{display:flex;gap:9px;align-items:center;margin-bottom:14px;flex-wrap:wrap}
+.sw{position:relative;flex:1;min-width:180px}
+.sw svg{position:absolute;left:11px;top:50%;transform:translateY(-50%);
+  color:var(--muted);width:12px;height:12px;pointer-events:none}
+.si{width:100%;padding:7px 11px 7px 32px;background:var(--bg3);
+  border:1px solid var(--border);color:var(--text);font-family:var(--mono);
+  font-size:.7rem;outline:none;transition:border-color .15s;border-radius:var(--radius)}
+.si::placeholder{color:var(--dim)}.si:focus{border-color:var(--red)}
+.fsel{padding:7px 11px;background:var(--bg3);border:1px solid var(--border);
+  color:var(--muted);font-family:var(--mono);font-size:.66rem;outline:none;
+  cursor:pointer;transition:border-color .15s;border-radius:var(--radius)}
+.fsel:focus{border-color:var(--red);color:var(--text)}
+
+/* ── FEED CARDS ─────────────────────────────────────────────── */
+.feeds-grid{display:grid;gap:7px}
+.fc{background:var(--bg2);border:1px solid var(--border);border-left:3px solid var(--border);
+  padding:12px 16px;display:grid;grid-template-columns:1fr auto;gap:7px;
+  cursor:pointer;transition:all .12s;animation:fi .25s ease both}
+.fc:hover{background:var(--bg3);border-color:var(--border2)}
+.fc.s-critical{border-left-color:var(--red);background:rgba(255,0,51,.025)}
+.fc.s-critical:hover{box-shadow:-2px 0 12px var(--red-glow)}
+.fc.s-high{border-left-color:var(--orange)}.fc.s-medium{border-left-color:var(--yellow)}
+.fc.s-low{border-left-color:var(--green)}.fc.s-info{border-left-color:var(--dim)}
+@keyframes fi{from{opacity:0;transform:translateY(3px)}to{opacity:1;transform:none}}
+.ft{font-family:var(--display);font-weight:600;font-size:.92rem;
+  color:var(--text);margin-bottom:4px;line-height:1.3}
+.ft .hl{color:var(--red)}
+.fm{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+.fsrc{font-family:var(--mono);font-size:.58rem;color:var(--muted)}
+.ftime{font-family:var(--mono);font-size:.56rem;color:var(--dim)}
+.ftags{display:flex;gap:3px;flex-wrap:wrap}
+.tag{font-family:var(--mono);font-size:.52rem;letter-spacing:.1em;
+  text-transform:uppercase;padding:1px 5px;border:1px solid}
+.tag-apt{border-color:rgba(255,0,51,.4);color:#ff4466}
+.tag-malware{border-color:rgba(255,68,0,.4);color:#ff6600}
+.tag-ransomware{border-color:rgba(255,0,51,.5);color:var(--red)}
+.tag-phishing{border-color:rgba(255,136,0,.4);color:#ffaa00}
+.tag-c2{border-color:rgba(200,0,255,.3);color:#cc44ff}
+.tag-exploit{border-color:rgba(0,180,255,.3);color:#33aaff}
+.tag-data_leak{border-color:rgba(255,0,51,.35);color:#ff6680}
+.fr{display:flex;flex-direction:column;align-items:flex-end;gap:5px}
+.sb{font-family:var(--mono);font-size:.52rem;letter-spacing:.12em;
+  text-transform:uppercase;padding:2px 6px;border:1px solid;white-space:nowrap}
+.sb.critical{border-color:var(--red);color:var(--red);background:var(--red-bg)}
+.sb.high{border-color:var(--orange);color:var(--orange)}
+.sb.medium{border-color:var(--yellow);color:var(--yellow)}
+.sb.low{border-color:var(--green);color:var(--green)}
+.sb.info{border-color:var(--dim);color:var(--dim)}
+
+/* ── IOC TABLE ──────────────────────────────────────────────── */
+.ioc-wrap{overflow-x:auto}
+.ioc-tbl{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:.68rem}
+.ioc-tbl th{background:var(--bg3);color:var(--red);font-family:var(--display);
+  font-weight:700;font-size:.68rem;letter-spacing:.15em;text-transform:uppercase;
+  padding:9px 13px;text-align:left;border-bottom:1px solid var(--red-dim);white-space:nowrap}
+.ioc-tbl td{padding:8px 13px;border-bottom:1px solid var(--border);vertical-align:middle}
+.ioc-tbl tr:hover td{background:var(--bg3)}
+.ioc-tbl tr:hover td:first-child{border-left:2px solid var(--red)}
+.iv{font-family:var(--mono);word-break:break-all;max-width:260px}
+.iv.ip{color:#ff6644}.iv.domain{color:#ff9944}
+.iv.hash_md5,.iv.hash_sha1,.iv.hash_sha256{color:#aaddff;font-size:.6rem}
+.iv.cve{color:var(--red);font-weight:600}
+.tbadge{font-family:var(--mono);font-size:.52rem;letter-spacing:.1em;
+  text-transform:uppercase;padding:2px 5px;border:1px solid var(--border2);
+  color:var(--muted);white-space:nowrap}
+.enrich-btn{font-family:var(--mono);font-size:.5rem;letter-spacing:.08em;
+  text-transform:uppercase;padding:2px 7px;border:1px solid rgba(255,0,51,.3);
+  background:transparent;color:var(--red);cursor:pointer;transition:all .12s;
+  white-space:nowrap;border-radius:var(--radius)}
+.enrich-btn:hover{background:var(--red-bg)}
+.enrich-btn.done{border-color:var(--green);color:var(--green)}
+.lookup-btn-sm{font-family:var(--mono);font-size:.5rem;letter-spacing:.08em;
+  text-transform:uppercase;padding:2px 7px;border:1px solid rgba(51,170,255,.3);
+  background:transparent;color:var(--blue);cursor:pointer;transition:all .12s;
+  white-space:nowrap;border-radius:var(--radius);margin-left:3px}
+.lookup-btn-sm:hover{background:rgba(51,170,255,.08)}
+
+/* ── IOC LOOKUP ─────────────────────────────────────────────── */
+.lookup-box{background:var(--bg2);border:1px solid var(--border);
+  border-top:2px solid var(--red);padding:20px;margin-bottom:20px}
+.lookup-title{font-family:var(--display);font-weight:700;font-size:1rem;
+  letter-spacing:.12em;text-transform:uppercase;color:var(--text);margin-bottom:4px}
+.lookup-sub{font-family:var(--mono);font-size:.62rem;color:var(--muted);
+  margin-bottom:14px;line-height:1.7}
+.lookup-row{display:flex;gap:9px;align-items:stretch}
+.lookup-input{flex:1;padding:10px 14px;background:var(--bg3);
+  border:1px solid var(--border);color:var(--text);font-family:var(--mono);
+  font-size:.75rem;outline:none;transition:border-color .15s;border-radius:var(--radius)}
+.lookup-input:focus{border-color:var(--red)}
+.lookup-input::placeholder{color:var(--dim)}
+.lookup-score{display:flex;align-items:center;gap:20px;padding:18px 20px;
+  background:var(--bg3);border:1px solid var(--border);margin-bottom:14px;margin-top:16px}
+.score-num{font-family:var(--display);font-weight:900;font-size:3.2rem;line-height:1}
+.score-num.low{color:var(--green)}.score-num.med{color:var(--yellow)}
+.score-num.high{color:var(--orange)}.score-num.crit{color:var(--red);text-shadow:0 0 30px var(--red-glow)}
+.score-meta strong{display:block;font-family:var(--display);font-weight:700;
+  font-size:1.1rem;letter-spacing:.06em;text-transform:uppercase;color:var(--text);margin-bottom:3px}
+.score-meta span{font-family:var(--mono);font-size:.62rem;color:var(--muted)}
+.result-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px}
+.result-card{background:var(--bg3);border:1px solid var(--border);padding:14px}
+.result-service{font-family:var(--display);font-weight:700;font-size:.85rem;
+  letter-spacing:.1em;text-transform:uppercase;color:var(--text);
+  margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid var(--border)}
+.rrow{display:flex;justify-content:space-between;align-items:flex-start;
+  padding:3px 0;border-bottom:1px solid rgba(255,255,255,.03);gap:8px}
+.rk{font-family:var(--mono);font-size:.59rem;color:var(--muted);flex-shrink:0}
+.rv{font-family:var(--mono);font-size:.61rem;color:var(--text);
+  text-align:right;word-break:break-all;max-width:160px}
+.rv.bad{color:var(--red)}.rv.good{color:var(--green)}
+.quick-btns{display:flex;gap:5px;flex-wrap:wrap;margin-top:10px}
+.qbtn{font-family:var(--mono);font-size:.55rem;padding:2px 8px;
+  border:1px solid rgba(255,0,51,.2);background:transparent;color:var(--muted);
+  cursor:pointer;transition:all .12s;border-radius:var(--radius)}
+.qbtn:hover{border-color:var(--red);color:var(--red)}
+
+/* ── SOURCES ────────────────────────────────────────────────── */
+.src-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:10px}
+.src-card{background:var(--bg2);border:1px solid var(--border);padding:14px 18px;
+  transition:border-color .15s;position:relative}
+.src-card:hover{border-color:var(--border2)}
+.src-card.on{border-top:2px solid var(--red)}.src-card.off{opacity:.45}
+.src-name{font-family:var(--display);font-weight:700;font-size:.95rem;
+  color:var(--text);margin-bottom:5px}
+.src-id{font-family:var(--mono);font-size:.58rem;color:var(--dim);
+  word-break:break-all;margin-bottom:9px;line-height:1.5}
+.src-meta{display:flex;justify-content:space-between;align-items:center;
+  padding-top:9px;border-top:1px solid var(--border)}
+.stype{font-family:var(--mono);font-size:.58rem;letter-spacing:.12em;
+  text-transform:uppercase;padding:2px 6px;border:1px solid}
+.stype.rss{border-color:rgba(0,180,255,.3);color:#33aaff}
+.stype.telegram{border-color:rgba(42,171,238,.3);color:var(--tg)}
+.stype.twitter{border-color:rgba(29,155,240,.3);color:var(--tw)}
+.stype.manual{border-color:var(--dim);color:var(--muted)}
+.src-cnt{font-family:var(--mono);font-size:.6rem;color:var(--muted)}
+.remove-btn{position:absolute;top:10px;right:10px;font-family:var(--mono);
+  font-size:.52rem;padding:2px 7px;border:1px solid rgba(255,0,51,.2);
+  background:transparent;color:var(--muted);cursor:pointer;
+  transition:all .12s;border-radius:var(--radius)}
+.remove-btn:hover{border-color:var(--red);color:var(--red);background:var(--red-bg)}
+
+/* ── FORMS ──────────────────────────────────────────────────── */
+.fp{background:var(--bg2);border:1px solid var(--border);padding:18px;margin-bottom:20px}
+.fp summary{font-family:var(--display);font-weight:700;font-size:.82rem;
+  letter-spacing:.1em;text-transform:uppercase;color:var(--muted);
+  cursor:pointer;display:flex;align-items:center;gap:7px}
+.fp summary:hover{color:var(--text)}.fp[open] summary{color:var(--red);margin-bottom:14px}
+.fg{display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:9px;align-items:end}
+.ff{display:flex;flex-direction:column;gap:4px}
+.fl{font-family:var(--mono);font-size:.55rem;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--dim)}
+.fi{padding:7px 9px;background:var(--bg3);border:1px solid var(--border);
+  color:var(--text);font-family:var(--mono);font-size:.68rem;outline:none;
+  border-radius:var(--radius)}
+.fi:focus{border-color:var(--red)}
+
+/* ── ENRICHMENT CONFIG ──────────────────────────────────────── */
+.cfg-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:10px}
+.cfg-card{background:var(--bg2);border:1px solid var(--border);padding:16px 18px}
+.cfg-card.enabled{border-left:3px solid var(--green)}
+.cfg-card.disabled{border-left:3px solid var(--border2)}
+.cfg-service{font-family:var(--display);font-weight:700;font-size:.95rem;
+  text-transform:uppercase;letter-spacing:.06em;color:var(--text);
+  margin-bottom:4px;display:flex;align-items:center;gap:7px}
+.cfg-note{font-family:var(--mono);font-size:.58rem;color:var(--dim);
+  margin-bottom:10px;line-height:1.6}
+.cfg-row{display:flex;gap:8px;align-items:center}
+.cfg-input{flex:1;padding:6px 9px;background:var(--bg3);border:1px solid var(--border);
+  color:var(--text);font-family:var(--mono);font-size:.65rem;outline:none;
+  border-radius:var(--radius)}
+.cfg-input:focus{border-color:var(--red)}
+.cfg-toggle{width:28px;height:15px;background:var(--border2);border-radius:8px;
+  position:relative;cursor:pointer;transition:background .2s;flex-shrink:0;border:none}
+.cfg-toggle.on{background:var(--green)}
+.cfg-toggle::after{content:'';position:absolute;top:2px;left:2px;width:11px;
+  height:11px;background:#000;border-radius:50%;transition:left .2s}
+.cfg-toggle.on::after{left:15px}
+
+/* ════════════════════════════════════════════════════════════
+   CONNECT PAGE — SPLIT LOGIN LAYOUT
+   ════════════════════════════════════════════════════════════ */
+.connect-split{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:0;
+  min-height:calc(100vh - 170px);
+  border:1px solid var(--border);
+  overflow:hidden;
+}
+
+/* ── LEFT PANEL: TELEGRAM ───────────────────────────────────── */
+.connect-panel{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  padding:52px 40px;
+  position:relative;
+  overflow:hidden;
+}
+.connect-panel.tg-panel{
+  background:linear-gradient(160deg,#0a1628 0%,#0d1f3c 40%,#071525 100%);
+  border-right:1px solid var(--border);
+}
+.connect-panel.tw-panel{
+  background:linear-gradient(160deg,#060d14 0%,#0d1a26 40%,#060d14 100%);
+}
+
+/* Ambient background glow */
+.connect-panel.tg-panel::before{
+  content:'';position:absolute;top:-80px;left:-80px;
+  width:360px;height:360px;border-radius:50%;
+  background:radial-gradient(circle,rgba(42,171,238,.12) 0%,transparent 70%);
+  pointer-events:none;
+}
+.connect-panel.tw-panel::before{
+  content:'';position:absolute;bottom:-80px;right:-80px;
+  width:360px;height:360px;border-radius:50%;
+  background:radial-gradient(circle,rgba(29,155,240,.1) 0%,transparent 70%);
+  pointer-events:none;
+}
+
+/* Decorative grid pattern */
+.connect-panel::after{
+  content:'';position:absolute;inset:0;pointer-events:none;
+  background-image:
+    linear-gradient(rgba(255,255,255,.015) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(255,255,255,.015) 1px,transparent 1px);
+  background-size:32px 32px;
+}
+
+.panel-inner{position:relative;z-index:1;width:100%;max-width:340px;text-align:center}
+
+/* Service logo mark */
+.service-mark{
+  width:72px;height:72px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  margin:0 auto 24px;position:relative;
+}
+.service-mark::before{
+  content:'';position:absolute;inset:-3px;border-radius:50%;
+  background:conic-gradient(from 0deg,transparent 0%,currentColor 100%);
+  opacity:.15;animation:rotate 4s linear infinite;
+}
+@keyframes rotate{to{transform:rotate(360deg)}}
+.tg-panel .service-mark{background:rgba(42,171,238,.15);color:var(--tg)}
+.tw-panel .service-mark{background:rgba(29,155,240,.12);color:var(--tw)}
+.service-mark svg{width:36px;height:36px;position:relative;z-index:1}
+
+.panel-eyebrow{
+  font-family:var(--mono);font-size:.6rem;letter-spacing:.25em;
+  text-transform:uppercase;margin-bottom:8px;
+}
+.tg-panel .panel-eyebrow{color:rgba(42,171,238,.6)}
+.tw-panel .panel-eyebrow{color:rgba(29,155,240,.6)}
+
+.panel-title{
+  font-family:var(--display);font-weight:900;font-size:2rem;
+  letter-spacing:.04em;text-transform:uppercase;line-height:1;
+  margin-bottom:6px;
+}
+.tg-panel .panel-title{color:#fff}
+.tw-panel .panel-title{color:#fff}
+
+.panel-sub{
+  font-family:var(--mono);font-size:.63rem;color:var(--muted);
+  line-height:1.8;margin-bottom:32px;
+}
+
+/* Secure authentication steps */
+.auth-steps{
+  background:rgba(0,0,0,.3);border:1px solid rgba(255,255,255,.06);
+  padding:16px 18px;margin-bottom:28px;text-align:left;
+  border-radius:var(--radius);
+}
+.auth-step{
+  display:flex;align-items:flex-start;gap:10px;
+  font-family:var(--mono);font-size:.6rem;color:var(--muted);
+  line-height:1.6;
+}
+.auth-step+.auth-step{margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,.04)}
+.step-num{
+  width:18px;height:18px;border-radius:50%;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  font-size:.55rem;font-weight:700;margin-top:1px;
+}
+.tg-panel .step-num{background:rgba(42,171,238,.2);color:var(--tg)}
+.tw-panel .step-num{background:rgba(29,155,240,.2);color:var(--tw)}
+.step-text strong{color:var(--text)}
+
+/* The main OAuth-style login button */
+.login-btn{
+  display:flex;align-items:center;justify-content:center;gap:12px;
+  width:100%;padding:14px 24px;
+  font-family:var(--display);font-weight:700;font-size:1rem;
+  letter-spacing:.06em;text-transform:uppercase;
+  border:none;cursor:pointer;position:relative;overflow:hidden;
+  transition:transform .15s,box-shadow .2s;
+  border-radius:var(--radius);
+}
+.login-btn::before{
+  content:'';position:absolute;inset:0;
+  background:rgba(255,255,255,.06);
+  transform:translateX(-100%);transition:transform .3s ease;
+}
+.login-btn:hover::before{transform:translateX(0)}
+.login-btn:hover{transform:translateY(-1px)}
+.login-btn:active{transform:translateY(0)}
+.login-btn svg{width:22px;height:22px;flex-shrink:0;position:relative;z-index:1}
+.login-btn span{position:relative;z-index:1}
+
+.tg-login-btn{
+  background:var(--tg);
+  color:#fff;
+  box-shadow:0 4px 24px rgba(42,171,238,.25);
+}
+.tg-login-btn:hover{box-shadow:0 6px 32px rgba(42,171,238,.4)}
+
+.tw-login-btn{
+  background:var(--tw);
+  color:#fff;
+  box-shadow:0 4px 24px rgba(29,155,240,.2);
+}
+.tw-login-btn:hover{box-shadow:0 6px 32px rgba(29,155,240,.35)}
+
+/* Connected state */
+.connected-badge{
+  display:none;align-items:center;gap:8px;
+  background:rgba(68,170,0,.1);border:1px solid rgba(68,170,0,.3);
+  padding:8px 14px;font-family:var(--mono);font-size:.65rem;
+  color:var(--green);margin-top:12px;border-radius:var(--radius);
+  justify-content:center;
+}
+.connected-badge.show{display:flex}
+.connected-badge svg{width:14px;height:14px}
+
+/* Secure notice */
+.secure-notice{
+  display:flex;align-items:center;justify-content:center;gap:5px;
+  font-family:var(--mono);font-size:.55rem;color:var(--dim);
+  margin-top:16px;
+}
+.secure-notice svg{width:10px;height:10px;color:var(--green)}
+
+/* Divider */
+.connect-divider{
+  grid-column:1/-1;
+  display:flex;align-items:center;justify-content:center;
+  padding:16px;border-top:1px solid var(--border);
+  background:var(--bg2);gap:12px;
+}
+.connect-divider span{font-family:var(--mono);font-size:.62rem;color:var(--dim)}
+
+/* Connection status bar */
+.conn-status-bar{
+  display:grid;grid-template-columns:1fr 1fr;gap:0;
+  border:1px solid var(--border);border-top:none;
+  background:var(--bg2);margin-bottom:20px;
+}
+.conn-status-item{
+  display:flex;align-items:center;gap:10px;padding:10px 16px;
+  font-family:var(--mono);font-size:.62rem;color:var(--muted);
+}
+.conn-status-item+.conn-status-item{border-left:1px solid var(--border)}
+.conn-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;background:var(--dim)}
+.conn-dot.live{background:var(--green);box-shadow:0 0 6px var(--green)}
+.conn-label strong{display:block;color:var(--text);font-size:.65rem}
+
+/* ── BARS ───────────────────────────────────────────────────── */
+.bars{display:grid;gap:5px}
+.bar-row{display:grid;grid-template-columns:72px 1fr 38px;align-items:center;gap:9px}
+.bar-lbl{font-family:var(--mono);font-size:.58rem;color:var(--muted);text-align:right}
+.bar-track{height:3px;background:var(--bg3);position:relative;overflow:hidden}
+.bar-fill{position:absolute;left:0;top:0;bottom:0;background:var(--red);
+  transition:width 1s cubic-bezier(.25,1,.5,1);box-shadow:0 0 5px var(--red-glow)}
+.bar-cnt{font-family:var(--mono);font-size:.58rem;color:var(--dim);text-align:right}
+
+/* ── STATES ─────────────────────────────────────────────────── */
+.empty{padding:40px 20px;text-align:center;border:1px dashed var(--border)}
+.empty p{font-family:var(--mono);font-size:.67rem;color:var(--muted);line-height:1.9}
+.ld{display:flex;align-items:center;gap:9px;font-family:var(--mono);
+  font-size:.62rem;color:var(--muted);padding:20px}
+.ld::before{content:'';width:13px;height:13px;border:2px solid var(--border);
+  border-top-color:var(--red);border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0}
+@keyframes spin{to{transform:rotate(360deg)}}
+.err-box{background:rgba(255,0,51,.08);border:1px solid rgba(255,0,51,.3);
+  padding:12px 16px;font-family:var(--mono);font-size:.68rem;color:var(--red);margin-bottom:12px}
+.info-box{background:rgba(0,180,255,.05);border:1px solid rgba(0,180,255,.2);
+  padding:12px 16px;font-family:var(--mono);font-size:.64rem;color:#33aaff;
+  line-height:1.7;margin-bottom:16px}
+
+/* ── PAGINATION ─────────────────────────────────────────────── */
+.pag{display:flex;align-items:center;gap:9px;margin-top:14px;padding-top:14px;
+  border-top:1px solid var(--border);font-family:var(--mono);font-size:.62rem;color:var(--muted)}
+.pbtn{padding:4px 10px;border:1px solid var(--border);background:transparent;
+  color:var(--muted);cursor:pointer;font-family:var(--mono);font-size:.62rem;
+  transition:all .12s;border-radius:var(--radius)}
+.pbtn:hover:not(:disabled){border-color:var(--red);color:var(--red)}
+.pbtn:disabled{opacity:.25;cursor:not-allowed}
+
+/* ── TOAST ──────────────────────────────────────────────────── */
+.toasts{position:fixed;bottom:20px;right:20px;z-index:9999;
+  display:flex;flex-direction:column;gap:7px}
+.toast{background:var(--bg3);border:1px solid var(--border);
+  border-left:3px solid var(--red);padding:9px 14px;font-family:var(--mono);
+  font-size:.62rem;color:var(--text);min-width:240px;max-width:360px;
+  animation:tsi .18s ease;box-shadow:0 4px 20px rgba(0,0,0,.8);
+  border-radius:var(--radius)}
+.toast.ok{border-left-color:var(--green)}
+@keyframes tsi{from{transform:translateX(20px);opacity:0}to{transform:none;opacity:1}}
+
+/* ── MISC ───────────────────────────────────────────────────── */
+.stitle{font-family:var(--display);font-weight:700;font-size:.72rem;
+  letter-spacing:.2em;text-transform:uppercase;color:var(--muted);
+  margin-bottom:10px;display:flex;align-items:center;gap:7px}
+.stitle::after{content:'';flex:1;height:1px;background:var(--border)}
+.dg{display:grid;grid-template-columns:2fr 1fr;gap:14px}
+.badge-free{font-size:.5rem;font-family:var(--mono);color:var(--green);
+  border:1px solid var(--green);padding:1px 4px;margin-left:6px}
+
+@media(max-width:860px){
+  .shell{grid-template-columns:1fr}.sidebar{display:none}
+  .sc-grid{grid-template-columns:repeat(2,1fr)}.dg{grid-template-columns:1fr}
+  .fg{grid-template-columns:1fr 1fr}
+  .connect-split{grid-template-columns:1fr}
+  .connect-panel.tg-panel{border-right:none;border-bottom:1px solid var(--border)}
+}
+</style>
+</head>
+<body>
+<div class="shell">
+
+<!-- ── TOPBAR ───────────────────────────────────────────────── -->
+<header class="topbar">
+  <div class="brand" onclick="navigate('dashboard')">
+    <div class="brand-ico"></div>
+    <div class="brand-name">ROOT<span>PRINT</span></div>
+  </div>
+  <div class="topbar-mid">
+    <span class="ts" id="clk"></span>
+    &nbsp;·&nbsp; LOCAL MODE &nbsp;·&nbsp;
+    <span id="srv-status" style="color:var(--green)">ONLINE</span>
+  </div>
+  <div class="topbar-right">
+    <div class="live-dot"><div class="dot"></div>LIVE</div>
+    <button class="btn" id="ibtn" onclick="doIngest()">⚡ INGEST NOW</button>
+  </div>
+</header>
+
+<!-- ── SIDEBAR ──────────────────────────────────────────────── -->
+<nav class="sidebar">
+  <div class="nav-sec">
+    <div class="nav-lbl">Navigation</div>
+    <div class="nav-item active" id="nav-dashboard" onclick="navigate('dashboard')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+      Dashboard
+    </div>
+    <div class="nav-item" id="nav-feeds" onclick="navigate('feeds')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 11a9 9 0 0 1 9 9"/><path d="M4 4a16 16 0 0 1 16 16"/><circle cx="5" cy="19" r="1"/></svg>
+      Feeds <span class="nav-badge" id="nb-feeds">—</span>
+    </div>
+    <div class="nav-item" id="nav-iocs" onclick="navigate('iocs')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      IOC Tracker <span class="nav-badge" id="nb-iocs">—</span>
+    </div>
+    <div class="nav-item" id="nav-lookup" onclick="navigate('lookup')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/><path d="M11 8v6M8 11h6"/></svg>
+      IOC Lookup
+    </div>
+    <div class="nav-item" id="nav-sources" onclick="navigate('sources')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-6"/></svg>
+      Sources
+    </div>
+    <div class="nav-item" id="nav-enrichment" onclick="navigate('enrichment')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+      Enrichment APIs
+    </div>
+    <div class="nav-item" id="nav-connect" onclick="navigate('connect')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+      Connect
+    </div>
+  </div>
+  <div class="sb-stats">
+    <div class="nav-lbl" style="padding:0;margin-bottom:7px">System</div>
+    <div class="sb-row"><span>Feeds</span><span class="val" id="sb-f">—</span></div>
+    <div class="sb-row"><span>IOCs</span><span class="val r" id="sb-i">—</span></div>
+    <div class="sb-row"><span>Critical</span><span class="val r" id="sb-c">—</span></div>
+    <div class="sb-row"><span>Sources</span><span class="val" id="sb-s">—</span></div>
+    <div class="sb-row"><span>Mode</span><span class="val" style="color:var(--green)">LOCAL</span></div>
+  </div>
+</nav>
+
+<!-- ── MAIN ─────────────────────────────────────────────────── -->
+<main class="main">
+
+  <!-- DASHBOARD ──────────────────────────────────────────────── -->
+  <div class="view active" id="view-dashboard">
+    <div class="ph"><div>
+      <div class="pt">THREAT <span>DASHBOARD</span></div>
+      <div class="ps">REAL-TIME AGGREGATION · RSS · TELEGRAM · TWITTER</div>
+    </div></div>
+    <div class="sc-grid">
+      <div class="sc"><div class="sc-lbl">Total Feeds</div><div class="sc-val" id="cv-f">—</div><div class="sc-sub">All ingested items</div></div>
+      <div class="sc alert"><div class="sc-lbl">Critical</div><div class="sc-val r" id="cv-c">—</div><div class="sc-sub">Severity: CRITICAL</div></div>
+      <div class="sc"><div class="sc-lbl">IOCs Extracted</div><div class="sc-val" id="cv-i">—</div><div class="sc-sub">IPs · Domains · Hashes · CVEs</div></div>
+      <div class="sc"><div class="sc-lbl">Active Sources</div><div class="sc-val" id="cv-s">—</div><div class="sc-sub">All active feeds</div></div>
+    </div>
+    <div class="dg">
+      <div><div class="stitle">Latest Threat Feeds</div><div id="dash-feeds"></div></div>
+      <div>
+        <div class="stitle">IOC Distribution</div>
+        <div class="sc" style="padding:16px"><div id="ioc-bars" class="bars"></div></div>
+        <div style="height:12px"></div>
+        <div class="stitle">Severity Breakdown</div>
+        <div class="sc" style="padding:16px"><div id="sev-bars" class="bars"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FEEDS ──────────────────────────────────────────────────── -->
+  <div class="view" id="view-feeds">
+    <div class="ph"><div><div class="pt">THREAT <span>FEEDS</span></div><div class="ps" id="feeds-lbl">LOADING...</div></div></div>
+    <div class="fbar">
+      <div class="sw"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg><input class="si" id="fsearch" type="text" placeholder="SEARCH THREATS..." oninput="db('feeds',()=>loadFeeds(0))" maxlength="256" autocomplete="off"/></div>
+      <select class="fsel" id="fsev" onchange="loadFeeds(0)"><option value="">ALL SEVERITY</option><option value="critical">CRITICAL</option><option value="high">HIGH</option><option value="medium">MEDIUM</option><option value="low">LOW</option><option value="info">INFO</option></select>
+      <select class="fsel" id="ftag" onchange="loadFeeds(0)"><option value="">ALL TAGS</option><option value="apt">APT</option><option value="malware">MALWARE</option><option value="ransomware">RANSOMWARE</option><option value="phishing">PHISHING</option><option value="c2">C2</option><option value="exploit">EXPLOIT</option><option value="data_leak">DATA LEAK</option></select>
+    </div>
+    <div id="feeds-list"></div>
+    <div class="pag" id="fpag" style="display:none">
+      <button class="pbtn" id="fp-prev" onclick="fPage(-1)">◀ PREV</button>
+      <span id="fp-info"></span>
+      <button class="pbtn" id="fp-next" onclick="fPage(1)">NEXT ▶</button>
+    </div>
+  </div>
+
+  <!-- IOC TRACKER ────────────────────────────────────────────── -->
+  <div class="view" id="view-iocs">
+    <div class="ph"><div><div class="pt">IOC <span>TRACKER</span></div><div class="ps" id="iocs-lbl">LOADING...</div></div></div>
+    <div class="fbar">
+      <div class="sw"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg><input class="si" id="isearch" type="text" placeholder="SEARCH IOC VALUE..." oninput="db('iocs',()=>loadIOCs(0))" maxlength="256" autocomplete="off"/></div>
+      <select class="fsel" id="itype" onchange="loadIOCs(0)"><option value="">ALL TYPES</option><option value="ip">IP</option><option value="domain">DOMAIN</option><option value="hash_md5">MD5</option><option value="hash_sha1">SHA1</option><option value="hash_sha256">SHA256</option><option value="cve">CVE</option></select>
+      <select class="fsel" id="ienr" onchange="loadIOCs(0)"><option value="">ALL</option><option value="true">ENRICHED</option><option value="false">NOT ENRICHED</option></select>
+      <button class="btn sm" onclick="navigate('lookup')">🔍 LOOKUP</button>
+    </div>
+    <div class="ioc-wrap">
+      <table class="ioc-tbl">
+        <thead><tr><th>TYPE</th><th>INDICATOR</th><th>TAGS</th><th>SCORE</th><th>SOURCE</th><th>LAST SEEN</th><th>ACTIONS</th></tr></thead>
+        <tbody id="ioc-tbody"></tbody>
+      </table>
+    </div>
+    <div class="pag" id="ipag" style="display:none">
+      <button class="pbtn" id="ip-prev" onclick="iPage(-1)">◀ PREV</button>
+      <span id="ip-info"></span>
+      <button class="pbtn" id="ip-next" onclick="iPage(1)">NEXT ▶</button>
+    </div>
+  </div>
+
+  <!-- IOC LOOKUP ─────────────────────────────────────────────── -->
+  <div class="view" id="view-lookup">
+    <div class="ph"><div>
+      <div class="pt">IOC <span>LOOKUP</span></div>
+      <div class="ps">QUERY ANY INDICATOR ACROSS ALL ENABLED INTELLIGENCE SOURCES</div>
+    </div></div>
+    <div class="lookup-box">
+      <div class="lookup-title">INDICATOR LOOKUP</div>
+      <div class="lookup-sub">
+        Paste any indicator to query all enabled APIs simultaneously.<br/>
+        Supports: IPv4, domain, MD5 / SHA1 / SHA256 hash, CVE ID, URL.
+        Configure APIs in <span style="color:var(--red);cursor:pointer" onclick="navigate('enrichment')">Enrichment APIs →</span>
+      </div>
+      <div class="lookup-row">
+        <input class="lookup-input" id="lookup-val" type="text" maxlength="512"
+          placeholder="8.8.8.8 · malware.com · d41d8cd98f00b204e9800998ecf8427e · CVE-2024-1234"
+          onkeydown="if(event.key==='Enter')runLookup()" autocomplete="off" spellcheck="false"/>
+        <button class="btn solid" id="lookup-btn" onclick="runLookup()">ANALYZE →</button>
+      </div>
+      <div class="quick-btns">
+        <span style="font-family:var(--mono);font-size:.56rem;color:var(--dim);margin-right:4px">TRY:</span>
+        <button class="qbtn" onclick="setLookup('8.8.8.8')">8.8.8.8</button>
+        <button class="qbtn" onclick="setLookup('malware.com')">malware.com</button>
+        <button class="qbtn" onclick="setLookup('d41d8cd98f00b204e9800998ecf8427e')">MD5 (empty)</button>
+        <button class="qbtn" onclick="setLookup('CVE-2024-12345')">CVE-2024-12345</button>
+        <button class="qbtn" onclick="setLookup('44d88612fea8a8f36de82e1278abb02f')">EICAR hash</button>
+      </div>
+      <div id="lookup-results"></div>
+    </div>
+  </div>
+
+  <!-- SOURCES ────────────────────────────────────────────────── -->
+  <div class="view" id="view-sources">
+    <div class="ph"><div><div class="pt">INTEL <span>SOURCES</span></div><div class="ps">ADD OR REMOVE RSS · TELEGRAM · TWITTER</div></div></div>
+    <div class="info-box">
+      <strong style="color:#fff">ADDING CUSTOM BLOGS:</strong> Paste any URL — ROOTPRINT auto-detects RSS, Atom, or HTML.<br/>
+      For RSS: <code>rss:https://example.com/feed/</code> &nbsp;·&nbsp; For HTML scraping: <code>rss:https://ti.qianxin.com/blog/</code>
+    </div>
+    <details class="fp" id="add-src-panel">
+      <summary>+ ADD NEW SOURCE</summary>
+      <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:12px">
+        <span style="font-family:var(--mono);font-size:.57rem;color:var(--dim);margin-right:2px;align-self:center">QUICK:</span>
+        <button class="qbtn" onclick="fillSrc('QianXin TI Blog','rss','rss:https://ti.qianxin.com/blog/')">QianXin</button>
+        <button class="qbtn" onclick="fillSrc('Unit 42','rss','rss:https://unit42.paloaltonetworks.com/feed/')">Unit 42</button>
+        <button class="qbtn" onclick="fillSrc('CISA Alerts','rss','rss:https://www.cisa.gov/uscert/ncas/alerts.xml')">CISA</button>
+        <button class="qbtn" onclick="fillSrc('Mandiant Blog','rss','rss:https://www.mandiant.com/resources/blog/rss.xml')">Mandiant</button>
+        <button class="qbtn" onclick="fillSrc('Sophos','rss','rss:https://news.sophos.com/en-us/category/threat-research/feed/')">Sophos</button>
+      </div>
+      <div class="fg">
+        <div class="ff"><label class="fl">Source Name</label><input class="fi" id="sn" type="text" placeholder="e.g. QianXin TI Blog" maxlength="256" autocomplete="off"/></div>
+        <div class="ff"><label class="fl">Type</label><select class="fi fsel" id="st"><option value="rss">RSS / HTML</option><option value="telegram">TELEGRAM</option><option value="twitter">TWITTER</option><option value="manual">MANUAL</option></select></div>
+        <div class="ff"><label class="fl">URL / Channel</label><input class="fi" id="sid" type="text" placeholder="rss:https://... or @channel" maxlength="512" autocomplete="off"/></div>
+        <button class="btn solid" onclick="addSrc()" style="padding:7px 14px;font-size:.62rem;font-family:var(--mono);letter-spacing:.1em">ADD</button>
+      </div>
+    </details>
+    <div class="stitle">Active Sources</div>
+    <div class="src-grid" id="active-srcs"></div>
+    <div style="height:20px"></div>
+    <div class="stitle" id="removed-title" style="display:none">Removed Sources</div>
+    <div class="src-grid" id="removed-srcs"></div>
+  </div>
+
+  <!-- ENRICHMENT APIS ────────────────────────────────────────── -->
+  <div class="view" id="view-enrichment">
+    <div class="ph"><div>
+      <div class="pt">ENRICHMENT <span>APIS</span></div>
+      <div class="ps">X-10 THREATFUSION — 14 INTELLIGENCE SOURCES</div>
+    </div></div>
+    <div class="info-box">
+      Enable APIs and paste your key. Keys stored locally in <code>data/config.json</code>.<br/>
+      <strong style="color:#fff">SSLBL</strong> and <strong style="color:#fff">Feodo Tracker</strong> need no key — free, always active.
+    </div>
+    <div class="cfg-grid" id="cfg-grid"><div class="ld">LOADING...</div></div>
+  </div>
+
+  <!-- ════════════════════════════════════════════════════════
+       CONNECT — SPLIT LAYOUT LOGIN PAGE
+       ════════════════════════════════════════════════════════ -->
+  <div class="view" id="view-connect">
+    <div class="ph"><div>
+      <div class="pt">CONNECT <span>ACCOUNTS</span></div>
+      <div class="ps">AUTHENTICATE VIA OFFICIAL APIS — SECURE · CREDENTIAL-FREE · OAUTH STYLE</div>
+    </div></div>
+
+    <!-- Live connection status bar -->
+    <div class="conn-status-bar">
+      <div class="conn-status-item">
+        <div class="conn-dot" id="tg-dot"></div>
+        <div class="conn-label">
+          <strong id="tg-status-label">Telegram</strong>
+          <span id="tg-status-sub" style="font-family:var(--mono);font-size:.58rem;color:var(--muted)">Not connected</span>
+        </div>
+      </div>
+      <div class="conn-status-item">
+        <div class="conn-dot" id="tw-dot"></div>
+        <div class="conn-label">
+          <strong id="tw-status-label">Twitter / X</strong>
+          <span id="tw-status-sub" style="font-family:var(--mono);font-size:.58rem;color:var(--muted)">Not connected</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Split Login Panels -->
+    <div class="connect-split">
+
+      <!-- LEFT: TELEGRAM ─────────────────────────────────────── -->
+      <div class="connect-panel tg-panel">
+        <div class="panel-inner">
+
+          <div class="service-mark">
+            <!-- Official Telegram logo SVG -->
+            <svg viewBox="0 0 24 24" fill="var(--tg)"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg>
+          </div>
+
+          <div class="panel-eyebrow">Threat Intelligence Channel Monitoring</div>
+          <div class="panel-title">Telegram</div>
+          <div class="panel-sub">
+            Monitor public threat intel channels in real-time using your own Telegram account via the official MTProto API.
+          </div>
+
+          <div class="auth-steps">
+            <div class="auth-step">
+              <div class="step-num">1</div>
+              <div class="step-text">Visit <strong>my.telegram.org</strong> and log in with your phone number</div>
+            </div>
+            <div class="auth-step">
+              <div class="step-num">2</div>
+              <div class="step-text">Click <strong>API development tools</strong> → create a free app</div>
+            </div>
+            <div class="auth-step">
+              <div class="step-num">3</div>
+              <div class="step-text">Copy your <strong>api_id</strong> and <strong>api_hash</strong> into the form below</div>
+            </div>
+            <div class="auth-step">
+              <div class="step-num">4</div>
+              <div class="step-text">ROOTPRINT adds them to your local <strong>.env</strong> — never sent to any server</div>
+            </div>
+          </div>
+
+          <button class="login-btn tg-login-btn" onclick="showTgForm()">
+            <svg viewBox="0 0 24 24" fill="white"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg>
+            <span>Login with Telegram</span>
+          </button>
+
+          <!-- Expandable credential form -->
+          <div id="tg-form" style="display:none;margin-top:20px;width:100%">
+            <div style="display:grid;gap:10px;text-align:left">
+              <div class="ff">
+                <label class="fl" style="color:rgba(42,171,238,.6)">API ID</label>
+                <input class="fi" id="tg-api-id" type="text" placeholder="From my.telegram.org" maxlength="20" autocomplete="off" inputmode="numeric" pattern="[0-9]*"/>
+              </div>
+              <div class="ff">
+                <label class="fl" style="color:rgba(42,171,238,.6)">API Hash</label>
+                <input class="fi" id="tg-api-hash" type="password" placeholder="32-character hex" maxlength="64" autocomplete="off"/>
+              </div>
+              <div class="ff">
+                <label class="fl" style="color:rgba(42,171,238,.6)">Phone Number</label>
+                <input class="fi" id="tg-phone" type="tel" placeholder="+1 555 000 0000" maxlength="20" autocomplete="off"/>
+              </div>
+              <div style="display:flex;gap:8px">
+                <button class="login-btn tg-login-btn" style="padding:10px 16px;font-size:.75rem;font-family:var(--mono);flex:1" onclick="saveTelegram()">
+                  <svg viewBox="0 0 24 24" fill="white" width="16" height="16"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" stroke="white" stroke-width="2" fill="none"/></svg>
+                  <span>Save & Connect</span>
+                </button>
+                <button class="btn ghost" onclick="document.getElementById('tg-form').style.display='none'" style="padding:10px">✕</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="connected-badge" id="tg-connected">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            Connected — credentials saved locally
+          </div>
+
+          <div class="secure-notice">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            Credentials stored locally only · never transmitted
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT: TWITTER / X ─────────────────────────────────── -->
+      <div class="connect-panel tw-panel">
+        <div class="panel-inner">
+
+          <div class="service-mark">
+            <!-- Official X (Twitter) logo -->
+            <svg viewBox="0 0 24 24" fill="var(--tw)"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+          </div>
+
+          <div class="panel-eyebrow">Threat Intelligence Feed Monitoring</div>
+          <div class="panel-title">Twitter / X</div>
+          <div class="panel-sub">
+            Monitor threat researchers and security accounts using the official Twitter API v2 with your own free developer credentials.
+          </div>
+
+          <div class="auth-steps">
+            <div class="auth-step">
+              <div class="step-num">1</div>
+              <div class="step-text">Visit <strong>developer.twitter.com</strong> and sign in</div>
+            </div>
+            <div class="auth-step">
+              <div class="step-num">2</div>
+              <div class="step-text">Create a <strong>Free</strong> app → navigate to Keys &amp; Tokens</div>
+            </div>
+            <div class="auth-step">
+              <div class="step-num">3</div>
+              <div class="step-text">Generate and copy your <strong>Bearer Token</strong></div>
+            </div>
+            <div class="auth-step">
+              <div class="step-num">4</div>
+              <div class="step-text">Paste below — saved to your local <strong>.env</strong> only</div>
+            </div>
+          </div>
+
+          <button class="login-btn tw-login-btn" onclick="showTwForm()">
+            <svg viewBox="0 0 24 24" fill="white"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+            <span>Login with X</span>
+          </button>
+
+          <!-- Expandable credential form -->
+          <div id="tw-form" style="display:none;margin-top:20px;width:100%">
+            <div style="display:grid;gap:10px;text-align:left">
+              <div class="ff">
+                <label class="fl" style="color:rgba(29,155,240,.6)">Bearer Token</label>
+                <input class="fi" id="tw-bearer" type="password" placeholder="AAAAAAAAAAAAA..." maxlength="256" autocomplete="off"/>
+              </div>
+              <div style="font-family:var(--mono);font-size:.58rem;color:var(--dim);line-height:1.7;padding:10px;background:rgba(29,155,240,.05);border:1px solid rgba(29,155,240,.1)">
+                <strong style="color:var(--text)">Alternative (no API key):</strong><br/>
+                Use <strong style="color:var(--tw)">Nitter RSS bridges</strong> — add any @handle as an RSS source:<br/>
+                <code>rss:https://nitter.net/vxunderground/rss</code>
+              </div>
+              <div style="display:flex;gap:8px">
+                <button class="login-btn tw-login-btn" style="padding:10px 16px;font-size:.75rem;font-family:var(--mono);flex:1" onclick="saveTwitter()">
+                  <svg viewBox="0 0 24 24" fill="white" width="16" height="16"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" stroke="white" stroke-width="2" fill="none"/></svg>
+                  <span>Save & Connect</span>
+                </button>
+                <button class="btn ghost" onclick="document.getElementById('tw-form').style.display='none'" style="padding:10px">✕</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="connected-badge" id="tw-connected">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            Connected — credentials saved locally
+          </div>
+
+          <div class="secure-notice">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            OAuth-style · zero third-party access · local only
+          </div>
+        </div>
+      </div>
+
+      <!-- Bottom bar with env file generator -->
+      <div class="connect-divider">
+        <span>Credentials configured above are saved to your browser and used to generate your local <code>.env</code> file</span>
+        <button class="btn sm" id="gen-env-btn" onclick="showEnvPreview()" style="display:none">⬇ GENERATE .env</button>
+      </div>
+    </div>
+
+    <!-- Generated .env preview -->
+    <div id="env-preview" style="display:none;margin-top:16px;padding:16px;background:var(--bg2);border:1px solid var(--border)">
+      <div class="stitle">GENERATED .env — COPY TO ROOTPRINT FOLDER</div>
+      <pre id="env-content" style="font-family:var(--mono);font-size:.62rem;color:#aaddff;line-height:1.9;white-space:pre-wrap"></pre>
+      <button class="btn sm" style="margin-top:10px" id="copy-env-btn">COPY .env</button>
+    </div>
+
+  </div>
+  <!-- END CONNECT VIEW -->
+
+</main>
+</div>
+<div class="toasts" id="toasts"></div>
+
+<script>
+/* ── SECURITY: No eval, no innerHTML with user data, CSP enforced ── */
+'use strict';
+
+const API  = window.location.protocol === 'file:' ? 'http://localhost:7117' : '';
+const PS   = 25;
+
+let fOff=0,fTot=0,iOff=0,iTot=0,cur='dashboard';
+const _T={};
+
+/* ── OUTPUT ENCODING — prevents XSS (OWASP A03) ─────────────────── */
+function esc(s){
+  const d=document.createElement('div');
+  d.appendChild(document.createTextNode(String(s??'')));
+  return d.innerHTML;
+}
+function trunc(s,n){s=String(s??'');return s.length>n?s.slice(0,n)+'…':s;}
+function rel(iso){
+  if(!iso)return '—';
+  const m=Math.floor((Date.now()-new Date(iso))/60000);
+  if(m<1)return 'just now';if(m<60)return m+'m ago';
+  const h=Math.floor(m/60);if(h<24)return h+'h ago';return Math.floor(h/24)+'d ago';
+}
+function tagHtml(t){
+  const s=esc(t);
+  return `<span class="tag tag-${s}">${s}</span>`;
+}
+const THREATS=['ransomware','malware','backdoor','exploit','breach','apt','trojan',
+  'lockbit','c2','zero-day','0day','phishing','botnet','stealer','dropper','rootkit','vulnerability'];
+function hl(text){
+  const d=document.createElement('div');
+  d.textContent=String(text??'').slice(0,400);
+  let h=d.innerHTML;
+  THREATS.forEach(w=>{
+    h=h.replace(new RegExp(`\\b(${w})\\b`,'gi'),'<span class="hl">$1</span>');
+  });
+  return h;
+}
+function empty(title,msg,btnLabel,btnFn){
+  return `<div class="empty">
+    <div style="font-size:1.8rem;opacity:.2;margin-bottom:10px">◈</div>
+    <p><strong style="color:var(--text);font-family:var(--display);font-size:.9rem">${esc(title)}</strong><br/>${esc(msg)}</p>
+    ${btnLabel?`<span style="display:inline-block;margin-top:14px;font-family:var(--mono);font-size:.62rem;color:var(--red);border:1px solid var(--red);padding:5px 13px;cursor:pointer" onclick="${esc(btnFn)}">${esc(btnLabel)}</span>`:''}
+  </div>`;
+}
+function db(k,fn){clearTimeout(_T[k]);_T[k]=setTimeout(fn,380);}
+
+/* ── API CALLS ────────────────────────────────────────────────────── */
+async function api(path,opts={}){
+  const r=await fetch(API+path,opts);
+  const j=await r.json();
+  if(!r.ok)throw new Error(j.error||`HTTP ${r.status}`);
+  return j;
+}
+
+/* ── TOAST ────────────────────────────────────────────────────────── */
+function toast(msg,ok=false){
+  const el=document.createElement('div');
+  el.className='toast'+(ok?' ok':'');
+  el.textContent=String(msg).slice(0,200);
+  document.getElementById('toasts').appendChild(el);
+  setTimeout(()=>el.remove(),4400);
+}
+
+/* ── CLOCK ────────────────────────────────────────────────────────── */
+setInterval(()=>{
+  const el=document.getElementById('clk');
+  if(el)el.textContent=new Date().toISOString().replace('T',' ').slice(0,19)+' UTC';
+},1000);
+
+/* ── SERVER STATUS ────────────────────────────────────────────────── */
+async function checkServer(){
+  const el=document.getElementById('srv-status');
+  try{
+    await fetch(API+'/api/health');
+    el.textContent='ONLINE';el.style.color='var(--green)';
+  }catch{
+    el.textContent='OFFLINE — run python server.py';el.style.color='var(--red)';
+  }
+}
+
+/* ── NAVIGATION ───────────────────────────────────────────────────── */
+function navigate(v){
+  cur=v;
+  document.querySelectorAll('.view').forEach(x=>x.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(x=>x.classList.remove('active'));
+  const vEl=document.getElementById('view-'+v);
+  if(vEl)vEl.classList.add('active');
+  const nEl=document.getElementById('nav-'+v);
+  if(nEl)nEl.classList.add('active');
+  const dispatch={dashboard:loadDash,feeds:()=>loadFeeds(0),iocs:()=>loadIOCs(0),
+    sources:loadSources,enrichment:loadEnrichment,connect:initConnect};
+  if(dispatch[v])dispatch[v]();
+}
+
+/* ── FEED CARD ────────────────────────────────────────────────────── */
+function fcHtml(f){
+  const sev=esc(f.severity||'info');
+  const tags=(f.tags||[]).slice(0,4).map(tagHtml).join('');
+  const src=esc(f.source_name||'UNKNOWN');
+  const url=esc(f.url||'');
+  return `<div class="fc s-${sev}" onclick="if('${url}')window.open('${url}','_blank','noopener,noreferrer')">
+    <div><div class="ft">${hl(trunc(f.title,160))}</div>
+    <div class="fm"><span class="fsrc">⬡ ${src}</span><span class="ftime">${rel(f.ingested_at)}</span>
+    <div class="ftags">${tags}</div></div></div>
+    <div class="fr"><span class="sb ${sev}">${sev.toUpperCase()}</span></div>
+  </div>`;
+}
+
+/* ── DASHBOARD ────────────────────────────────────────────────────── */
+async function loadDash(){
+  try{
+    const s=await api('/api/stats');
+    const fN=s.feeds?.total||0,cN=s.feeds?.by_severity?.critical||0;
+    const iN=s.iocs?.total||0,sN=s.sources?.active||0;
+    ['cv-f','sb-f'].forEach(id=>document.getElementById(id).textContent=fN.toLocaleString());
+    ['cv-c','sb-c'].forEach(id=>document.getElementById(id).textContent=cN.toLocaleString());
+    ['cv-i','sb-i'].forEach(id=>document.getElementById(id).textContent=iN.toLocaleString());
+    ['cv-s','sb-s'].forEach(id=>document.getElementById(id).textContent=sN.toLocaleString());
+    document.getElementById('nb-feeds').textContent=fN||'—';
+    document.getElementById('nb-iocs').textContent=iN||'—';
+    const recent=s.recent_feeds||[];
+    document.getElementById('dash-feeds').innerHTML=recent.length
+      ?'<div class="feeds-grid">'+recent.map(fcHtml).join('')+'</div>'
+      :empty('NO FEEDS YET','Click ⚡ INGEST NOW to pull live data.','INGEST NOW','doIngest()');
+    const bt=s.iocs?.by_type||{},btM=Math.max(...Object.values(bt).map(Number),1);
+    document.getElementById('ioc-bars').innerHTML=Object.entries(bt)
+      .sort((a,b)=>Number(b[1])-Number(a[1]))
+      .map(([t,n])=>`<div class="bar-row"><div class="bar-lbl">${esc(t.replace('hash_','').toUpperCase())}</div>
+        <div class="bar-track"><div class="bar-fill" style="width:${(Number(n)/btM*100).toFixed(1)}%"></div></div>
+        <div class="bar-cnt">${n}</div></div>`).join('')
+      ||'<div style="font-family:var(--mono);font-size:.62rem;color:var(--dim);padding:6px 0">Run ingestion first</div>';
+    const bs=s.feeds?.by_severity||{},bsM=Math.max(...Object.values(bs).map(Number),1);
+    const sC={critical:'#ff0033',high:'#ff4400',medium:'#ff8800',low:'#44aa00',info:'#333'};
+    document.getElementById('sev-bars').innerHTML=['critical','high','medium','low','info']
+      .filter(sv=>bs[sv])
+      .map(sv=>`<div class="bar-row"><div class="bar-lbl">${sv.toUpperCase()}</div>
+        <div class="bar-track"><div class="bar-fill" style="width:${(Number(bs[sv]||0)/bsM*100).toFixed(1)}%;background:${sC[sv]};box-shadow:0 0 5px ${sC[sv]}44"></div></div>
+        <div class="bar-cnt">${bs[sv]||0}</div></div>`).join('')
+      ||'<div style="font-family:var(--mono);font-size:.62rem;color:var(--dim);padding:6px 0">No data yet</div>';
+  }catch(e){
+    document.getElementById('dash-feeds').innerHTML=
+      `<div class="err-box">⚠ BACKEND ERROR: ${esc(e.message)}<br/>Run <code>python server.py</code></div>`;
+  }
+}
+
+/* ── FEEDS ────────────────────────────────────────────────────────── */
+async function loadFeeds(off){
+  fOff=off;const el=document.getElementById('feeds-list');
+  el.innerHTML='<div class="ld">FETCHING THREAT FEEDS...</div>';
+  try{
+    const s=document.getElementById('fsearch').value.slice(0,256);
+    const sv=document.getElementById('fsev').value;
+    const tg=document.getElementById('ftag').value;
+    let qs=`?limit=${PS}&offset=${fOff}`;
+    if(s)qs+=`&search=${encodeURIComponent(s)}`;
+    if(sv)qs+=`&severity=${encodeURIComponent(sv)}`;
+    if(tg)qs+=`&tag=${encodeURIComponent(tg)}`;
+    const d=await api('/api/feeds'+qs);
+    fTot=d.total||0;
+    document.getElementById('feeds-lbl').textContent=`${fTot.toLocaleString()} THREAT ITEMS`;
+    document.getElementById('nb-feeds').textContent=fTot||'—';
+    const feeds=d.data||[];
+    if(!feeds.length){el.innerHTML=empty('NO FEEDS YET','Run ⚡ INGEST NOW to pull live data.','INGEST NOW','doIngest()');document.getElementById('fpag').style.display='none';return;}
+    el.innerHTML='<div class="feeds-grid">'+feeds.map(fcHtml).join('')+'</div>';
+    const tp=Math.ceil(fTot/PS),cp=Math.floor(fOff/PS)+1;
+    document.getElementById('fpag').style.display='flex';
+    document.getElementById('fp-info').textContent=`PAGE ${cp} / ${tp} · ${fTot.toLocaleString()} TOTAL`;
+    document.getElementById('fp-prev').disabled=fOff===0;
+    document.getElementById('fp-next').disabled=fOff+PS>=fTot;
+  }catch(e){el.innerHTML=`<div class="err-box">⚠ ${esc(e.message)}</div>`;}
+}
+function fPage(d){const n=fOff+d*PS;if(n<0||n>=fTot)return;loadFeeds(n);}
+
+/* ── IOC TRACKER ──────────────────────────────────────────────────── */
+async function loadIOCs(off){
+  iOff=off;const tb=document.getElementById('ioc-tbody');
+  tb.innerHTML='<tr><td colspan="7"><div class="ld">LOADING INDICATORS...</div></td></tr>';
+  try{
+    const s=document.getElementById('isearch').value.slice(0,256);
+    const t=document.getElementById('itype').value;
+    const e=document.getElementById('ienr').value;
+    let qs=`?limit=${PS}&offset=${iOff}`;
+    if(s)qs+=`&search=${encodeURIComponent(s)}`;
+    if(t)qs+=`&type=${encodeURIComponent(t)}`;
+    if(e)qs+=`&enriched=${encodeURIComponent(e)}`;
+    const d=await api('/api/iocs'+qs);
+    iTot=d.total||0;
+    document.getElementById('iocs-lbl').textContent=`${iTot.toLocaleString()} INDICATORS`;
+    document.getElementById('nb-iocs').textContent=iTot||'—';
+    const iocs=d.data||[];
+    if(!iocs.length){tb.innerHTML=`<tr><td colspan="7">${empty('NO IOCs YET','Auto-extracted during ingestion.','INGEST NOW','doIngest()')}</td></tr>`;document.getElementById('ipag').style.display='none';return;}
+    tb.innerHTML=iocs.map(ioc=>{
+      const tags=(ioc.tags||[]).slice(0,3).map(tagHtml).join('');
+      const sc=ioc.threat_score;
+      const scColor=sc>=70?'var(--red)':sc>=40?'var(--orange)':sc>=15?'var(--yellow)':'var(--green)';
+      const scHtml=sc!==undefined?`<span style="font-family:var(--mono);font-size:.62rem;font-weight:700;color:${scColor}">${sc}/100</span>`:'—';
+      const iocId=esc(ioc.id);
+      const iocVal=esc(ioc.value);
+      const iocType=esc(ioc.type);
+      return`<tr>
+        <td><span class="tbadge">${iocType}</span></td>
+        <td><div class="iv ${iocType}" title="${iocVal}">${esc(trunc(ioc.value,60))}</div></td>
+        <td>${tags||'<span style="color:var(--dim);font-size:.6rem">—</span>'}</td>
+        <td>${scHtml}</td>
+        <td style="font-family:var(--mono);font-size:.58rem;color:var(--muted)">${esc(ioc.source_name||'—')}</td>
+        <td style="font-family:var(--mono);font-size:.58rem;color:var(--muted)">${rel(ioc.last_seen)}</td>
+        <td>
+          <button class="enrich-btn ${ioc.enriched?'done':''}" data-id="${iocId}" data-val="${iocVal}" data-type="${iocType}" onclick="quickEnrich(this)">${ioc.enriched?'✓ DONE':'ENRICH'}</button>
+          <button class="lookup-btn-sm" data-val="${iocVal}" onclick="setLookupAndGo(this.dataset.val)">LOOKUP</button>
+        </td>
+      </tr>`;
+    }).join('');
+    const tp=Math.ceil(iTot/PS),cp=Math.floor(iOff/PS)+1;
+    document.getElementById('ipag').style.display='flex';
+    document.getElementById('ip-info').textContent=`PAGE ${cp} / ${tp} · ${iTot.toLocaleString()} TOTAL`;
+    document.getElementById('ip-prev').disabled=iOff===0;
+    document.getElementById('ip-next').disabled=iOff+PS>=iTot;
+  }catch(e){tb.innerHTML=`<tr><td colspan="7" style="padding:20px;font-family:var(--mono);color:var(--red)">ERROR: ${esc(e.message)}</td></tr>`;}
+}
+function iPage(d){const n=iOff+d*PS;if(n<0||n>=iTot)return;loadIOCs(n);}
+async function quickEnrich(btn){
+  const id=btn.dataset.id,val=btn.dataset.val,type=btn.dataset.type;
+  toast(`Enriching ${val.slice(0,40)}...`);
+  try{
+    const r=await api('/api/enrich',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({ioc_id:id,ioc_value:val,ioc_type:type})});
+    toast(`✓ Score: ${r.threat_score}/100 · ${r.sources_queried} sources`,true);
+    loadIOCs(iOff);
+  }catch(e){toast('Enrich error: '+e.message);}
+}
+
+/* ── IOC LOOKUP ───────────────────────────────────────────────────── */
+function setLookup(v){document.getElementById('lookup-val').value=v;}
+function setLookupAndGo(v){setLookup(v);navigate('lookup');}
+function detectType(v){
+  v=v.trim();
+  if(/^CVE-\d{4}-\d{4,7}$/i.test(v))return 'cve';
+  if(/^[a-fA-F0-9]{64}$/.test(v))return 'hash_sha256';
+  if(/^[a-fA-F0-9]{40}$/.test(v))return 'hash_sha1';
+  if(/^[a-fA-F0-9]{32}$/.test(v))return 'hash_md5';
+  if(/^(?:(?:25[0-5]|2[0-4]\d|[01]?\d\d?)\.){3}(?:25[0-5]|2[0-4]\d|[01]?\d\d?)$/.test(v))return 'ip';
+  if(/^https?:\/\//.test(v))return 'url';
+  return 'domain';
+}
+async function runLookup(){
+  const val=document.getElementById('lookup-val').value.trim().slice(0,512);
+  if(!val){toast('Enter an indicator');return;}
+  const type=detectType(val);
+  const btn=document.getElementById('lookup-btn');
+  btn.disabled=true;btn.textContent='ANALYZING...';
+  const res=document.getElementById('lookup-results');
+  res.innerHTML='<div class="ld">QUERYING '+esc(type.toUpperCase())+' ACROSS ALL ENABLED SOURCES...</div>';
+  try{
+    const d=await api('/api/enrich',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({ioc_value:val,ioc_type:type})});
+    const sc=d.threat_score||0;
+    const scCls=sc>=70?'crit':sc>=40?'high':sc>=15?'med':'low';
+    const scLabel=sc>=70?'CRITICAL RISK':sc>=40?'HIGH RISK':sc>=15?'MEDIUM RISK':'LOW RISK';
+    const results=d.results||{};
+    const keys=Object.keys(results);
+    if(!keys.length){
+      res.innerHTML=`<div class="err-box" style="margin-top:16px">No API results — go to <strong style="cursor:pointer;color:var(--red)" onclick="navigate('enrichment')">Enrichment APIs</strong> to configure keys. SSLBL and Feodo Tracker need no key.</div>`;
+      return;
+    }
+    const scoreHtml=`<div class="lookup-score">
+      <div class="score-num ${scCls}">${sc}</div>
+      <div class="score-meta">
+        <strong>${scLabel}</strong>
+        <span>/100 UNIFIED THREAT SCORE &nbsp;·&nbsp; ${esc(type.toUpperCase())} &nbsp;·&nbsp; ${keys.length} SOURCES QUERIED</span>
+      </div>
+    </div>`;
+    const cards=keys.map(svc=>{
+      const r=results[svc];
+      const rows=Object.entries(r).map(([k,v])=>{
+        const display=Array.isArray(v)?v.join(', '):String(v);
+        const isBad=(k.includes('malicious')&&Number(v)>0)||(k==='blocked'&&v===true)||(k.includes('abuse')&&Number(v)>50)||(k==='found'&&v===true&&svc==='malware_bazaar');
+        const isGood=(k==='found'&&v===false)||(k.includes('malicious')&&Number(v)===0);
+        return `<div class="rrow"><span class="rk">${esc(k)}</span><span class="rv ${isBad?'bad':isGood?'good':''}">${esc(trunc(display,64))}</span></div>`;
+      }).join('');
+      return `<div class="result-card"><div class="result-service">${esc(svc.replace(/_/g,' ').toUpperCase())}</div>${rows}</div>`;
+    }).join('');
+    res.innerHTML=scoreHtml+`<div class="result-grid">${cards}</div>`;
+  }catch(e){
+    res.innerHTML=`<div class="err-box" style="margin-top:16px">ERROR: ${esc(e.message)}</div>`;
+  }finally{btn.disabled=false;btn.textContent='ANALYZE →';}
+}
+
+/* ── SOURCES ──────────────────────────────────────────────────────── */
+async function loadSources(){
+  const ag=document.getElementById('active-srcs'),rg=document.getElementById('removed-srcs');
+  ag.innerHTML='<div class="ld">LOADING...</div>';
+  try{
+    const d=await api('/api/sources?all=1');
+    const srcs=d.data||[];
+    const active=srcs.filter(s=>s.active),removed=srcs.filter(s=>!s.active);
+    ag.innerHTML=active.length?active.map(s=>srcCard(s,false)).join(''):empty('NO ACTIVE SOURCES','Add one above.','','');
+    document.getElementById('removed-title').style.display=removed.length?'flex':'none';
+    rg.innerHTML=removed.map(s=>srcCard(s,true)).join('');
+  }catch(e){ag.innerHTML=`<div class="err-box">${esc(e.message)}</div>`;}
+}
+function srcCard(s,removed){
+  const id=esc(s.id),name=esc(s.name),ident=esc(s.identifier),type=esc(s.type);
+  return `<div class="src-card ${removed?'off':'on'}">
+    ${removed
+      ?`<button class="remove-btn" style="border-color:rgba(68,170,0,.3);color:var(--green)" onclick="restoreSrc('${id}')">↩ RESTORE</button>`
+      :`<button class="remove-btn" onclick="removeSrc('${id}','${name}')">✕ REMOVE</button>`}
+    <div class="src-name">${name}</div>
+    <div class="src-id">${ident}</div>
+    <div class="src-meta">
+      <span class="stype ${type}">${type.toUpperCase()}</span>
+      <span class="src-cnt">last: ${rel(s.last_scraped)} · ${s.scrape_count||0} runs</span>
+    </div>
+  </div>`;
+}
+async function removeSrc(id,name){
+  if(!confirm(`Remove source "${name}"?\nExisting data is kept. You can restore it later.`))return;
+  try{await api(`/api/sources/${encodeURIComponent(id)}`,{method:'DELETE'});toast(`"${name}" removed`,true);loadSources();}
+  catch(e){toast('Error: '+e.message);}
+}
+async function restoreSrc(id){
+  try{
+    const d=await api('/api/sources?all=1');
+    const src=(d.data||[]).find(s=>s.id===id);
+    if(!src){toast('Source not found');return;}
+    await api('/api/sources',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({name:src.name,type:src.type,identifier:src.identifier,active:true})});
+    await api(`/api/sources/${encodeURIComponent(id)}`,{method:'DELETE'});
+    toast('Source restored',true);loadSources();
+  }catch(e){toast('Error restoring: '+e.message);}
+}
+function fillSrc(n,t,id){
+  document.getElementById('sn').value=n;
+  document.getElementById('st').value=t;
+  document.getElementById('sid').value=id;
+  document.getElementById('add-src-panel').open=true;
+}
+async function addSrc(){
+  const name=document.getElementById('sn').value.trim().slice(0,256);
+  const type=document.getElementById('st').value;
+  let identifier=document.getElementById('sid').value.trim().slice(0,512);
+  if(!name||!identifier){toast('Fill in all fields');return;}
+  if(type==='rss'&&identifier.startsWith('http')&&!identifier.startsWith('rss:'))
+    identifier='rss:'+identifier;
+  try{
+    await api('/api/sources',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({name,type,identifier,active:true})});
+    toast(`"${name}" added ✓`,true);
+    document.getElementById('sn').value='';
+    document.getElementById('sid').value='';
+    document.getElementById('add-src-panel').open=false;
+    loadSources();
+  }catch(e){toast('Error: '+e.message);}
+}
+
+/* ── ENRICHMENT APIS ──────────────────────────────────────────────── */
+const SVC={
+  virustotal:    {label:'VirusTotal',    url:'https://www.virustotal.com/gui/settings/api', desc:'IP/domain/URL/hash reputation · 4 req/min free',types:'ip, domain, hash, url'},
+  shodan:        {label:'Shodan',        url:'https://shodan.io',                           desc:'Host fingerprinting, open ports, geolocation',types:'ip'},
+  alienvault_otx:{label:'AlienVault OTX',url:'https://otx.alienvault.com',                 desc:'Threat pulses, passive DNS, WHOIS',types:'ip, domain, hash'},
+  abuseipdb:     {label:'AbuseIPDB',     url:'https://www.abuseipdb.com',                  desc:'IP abuse confidence score & report count',types:'ip'},
+  urlscan:       {label:'URLscan.io',    url:'https://urlscan.io',                         desc:'URL/domain/IP scan results & verdicts',types:'url, domain, ip'},
+  urlhaus:       {label:'URLhaus',       url:'https://urlhaus.abuse.ch',                   desc:'Malicious URL/domain database',types:'url, domain'},
+  ipinfo:        {label:'IPInfo',        url:'https://ipinfo.io',                          desc:'Geolocation, ASN, organisation, hostname',types:'ip'},
+  threatfox:     {label:'ThreatFox',     url:'https://threatfox.abuse.ch',                 desc:'IOC database with malware families',types:'all'},
+  malware_bazaar:{label:'Malware Bazaar',url:'https://auth.abuse.ch',                      desc:'Hash lookup, YARA rules, malware metadata',types:'hash'},
+  ransomware_live:{label:'Ransomware.live',url:'https://my.ransomware.live',               desc:'Ransomware group & victim tracking',types:'domain'},
+  hunter_io:     {label:'Hunter.io',     url:'https://hunter.io',                          desc:'Domain email discovery & verification',types:'domain, email'},
+  yaraify:       {label:'YARAify',       url:'https://yaraify.abuse.ch',                   desc:'Hash lookup with YARA rule hits',types:'hash'},
+  sslbl:         {label:'SSLBL (abuse.ch)',url:'https://sslbl.abuse.ch',                   desc:'SSL/JA3/IP blacklist — NO KEY NEEDED',types:'ip, cert',free:true},
+  feodo_tracker: {label:'Feodo Tracker', url:'https://feodotracker.abuse.ch',              desc:'Botnet C2 IP blocklist — NO KEY NEEDED',types:'ip',free:true},
+};
+async function loadEnrichment(){
+  const grid=document.getElementById('cfg-grid');
+  try{
+    const d=await api('/api/config');
+    const cfg=d.data||{};
+    grid.innerHTML=Object.entries(SVC).map(([svc,meta])=>{
+      const c=cfg[svc]||{enabled:false,has_key:false};
+      const s=esc(svc);
+      return`<div class="cfg-card ${c.enabled?'enabled':'disabled'}" id="cfgcard-${s}">
+        <div class="cfg-service">${esc(meta.label)}
+          ${meta.free?'<span class="badge-free">FREE</span>':''}
+          <span style="font-family:var(--mono);font-size:.52rem;${c.enabled?'color:var(--green)':'color:var(--dim)'};margin-left:auto">${c.enabled?'ON':'OFF'}</span>
+        </div>
+        <div class="cfg-note">${esc(meta.desc)}<br/><span style="color:var(--border2)">Types: ${esc(meta.types)}</span> &nbsp;·&nbsp; <a href="${esc(meta.url)}" target="_blank" rel="noopener">Register free →</a></div>
+        <div class="cfg-row">
+          ${meta.free
+            ?`<span style="font-family:var(--mono);font-size:.62rem;color:var(--green)">✓ No key required</span>`
+            :`<input class="cfg-input" type="password" id="cfgkey-${s}" placeholder="${c.has_key?'Key saved ••••••••':'Paste API key...'}" autocomplete="off" maxlength="256"/>`
+          }
+          <button class="cfg-toggle ${c.enabled?'on':''}" id="cfgtog-${s}" onclick="toggleCfg('${s}',this)"></button>
+          ${!meta.free?`<button class="btn sm" onclick="saveKey('${s}')">SAVE</button>`:''}
+        </div>
+      </div>`;
+    }).join('');
+  }catch(e){grid.innerHTML=`<div class="err-box">${esc(e.message)}</div>`;}
+}
+async function saveKey(svc){
+  const keyEl=document.getElementById(`cfgkey-${svc}`);
+  const key=keyEl?.value?.trim();
+  if(!key){toast('Enter a key first');return;}
+  try{
+    await api('/api/config',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({service:svc,api_key:key,enabled:true})});
+    toast(`${SVC[svc]?.label||svc} key saved ✓`,true);
+    keyEl.value='';
+    loadEnrichment();
+  }catch(e){toast('Error: '+e.message);}
+}
+async function toggleCfg(svc,btn){
+  const on=btn.classList.contains('on');
+  try{
+    await api('/api/config',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({service:svc,enabled:!on})});
+    btn.classList.toggle('on',!on);
+    const card=document.getElementById(`cfgcard-${svc}`);
+    if(card)card.className=`cfg-card ${!on?'enabled':'disabled'}`;
+    toast(`${SVC[svc]?.label||svc} ${!on?'enabled':'disabled'}`,!on);
+    loadEnrichment();
+  }catch(e){toast('Error: '+e.message);}
+}
+
+/* ── CONNECT PAGE ─────────────────────────────────────────────────── */
+function initConnect(){
+  const tgSaved=localStorage.getItem('rp_tg');
+  const twSaved=localStorage.getItem('rp_tw');
+  if(tgSaved)setConnected('tg');
+  if(twSaved)setConnected('tw');
+  if(tgSaved||twSaved){
+    document.getElementById('gen-env-btn').style.display='inline-flex';
+  }
+}
+function showTgForm(){
+  const f=document.getElementById('tg-form');
+  f.style.display=f.style.display==='none'?'block':'none';
+}
+function showTwForm(){
+  const f=document.getElementById('tw-form');
+  f.style.display=f.style.display==='none'?'block':'none';
+}
+function setConnected(prefix){
+  document.getElementById(`${prefix}-connected`).classList.add('show');
+  const dot=document.getElementById(`${prefix}-dot`);
+  if(dot){dot.classList.add('live');}
+  const sub=document.getElementById(`${prefix}-status-sub`);
+  if(sub)sub.textContent='Connected';
+  document.getElementById('gen-env-btn').style.display='inline-flex';
+}
+function saveTelegram(){
+  const id_v=document.getElementById('tg-api-id').value.trim();
+  const hash=document.getElementById('tg-api-hash').value.trim();
+  const phone=document.getElementById('tg-phone').value.trim();
+  if(!id_v||!hash||!phone){toast('Fill in all Telegram fields');return;}
+  if(!/^\d{5,12}$/.test(id_v)){toast('API ID should be 5-12 digits');return;}
+  if(!/^[a-fA-F0-9]{32}$/.test(hash)){toast('API Hash should be 32 hex characters');return;}
+  if(!/^\+\d{7,15}$/.test(phone)){toast('Phone should be in +123456789 format');return;}
+  // Store only in sessionStorage for this session — more secure than localStorage
+  sessionStorage.setItem('rp_tg',JSON.stringify({api_id:id_v,api_hash:hash,phone}));
+  localStorage.setItem('rp_tg','1'); // flag only
+  document.getElementById('tg-form').style.display='none';
+  setConnected('tg');
+  toast('Telegram credentials saved for this session ✓',true);
+}
+function saveTwitter(){
+  const bearer=document.getElementById('tw-bearer').value.trim();
+  if(!bearer){toast('Enter your Bearer Token');return;}
+  if(bearer.length<20){toast('Bearer token appears too short');return;}
+  sessionStorage.setItem('rp_tw',JSON.stringify({bearer_token:bearer}));
+  localStorage.setItem('rp_tw','1');
+  document.getElementById('tw-form').style.display='none';
+  setConnected('tw');
+  toast('Twitter credentials saved for this session ✓',true);
+}
+function showEnvPreview(){
+  const tg=JSON.parse(sessionStorage.getItem('rp_tg')||'{}');
+  const tw=JSON.parse(sessionStorage.getItem('rp_tw')||'{}');
+  const envText=`PORT=7117
+SWEEP_INTERVAL=600
+SECRET_KEY=GENERATE_WITH: python -c "import secrets; print(secrets.token_hex(32))"
+
+# Telegram (free from my.telegram.org)
+TELEGRAM_API_ID=${tg.api_id||'YOUR_API_ID'}
+TELEGRAM_API_HASH=${tg.api_hash||'YOUR_API_HASH'}
+TELEGRAM_PHONE=${tg.phone||'YOUR_PHONE'}
+
+# Twitter/X Bearer Token (free from developer.twitter.com)
+TWITTER_BEARER_TOKEN=${tw.bearer_token||'YOUR_BEARER_TOKEN'}`;
+  const pre=document.getElementById('env-preview');
+  const content=document.getElementById('env-content');
+  pre.style.display='block';
+  content.textContent=envText; // textContent — no XSS risk
+  document.getElementById('copy-env-btn').onclick=()=>{
+    navigator.clipboard.writeText(envText).then(()=>toast('Copied to clipboard ✓',true));
+  };
+}
+
+/* ── INGEST ───────────────────────────────────────────────────────── */
+async function doIngest(){
+  const btn=document.getElementById('ibtn');
+  btn.disabled=true;btn.textContent='⚡ INGESTING...';
+  toast('Ingestion started — scraping all active sources...');
+  try{
+    const d=await api('/api/ingest',{method:'POST'});
+    toast(`✅ Done: ${d.total_feeds||0} feeds · ${d.total_iocs||0} IOCs`,true);
+    if(cur==='dashboard')loadDash();
+    else if(cur==='feeds')loadFeeds(0);
+    else if(cur==='iocs')loadIOCs(0);
+    else if(cur==='sources')loadSources();
+  }catch(e){toast('Ingest error: '+e.message);}
+  finally{btn.disabled=false;btn.textContent='⚡ INGEST NOW';}
+}
+
+/* ── INIT ─────────────────────────────────────────────────────────── */
+checkServer();
+loadDash();
+setInterval(()=>{if(cur==='dashboard')loadDash();},300000);
+</script>
+</body>
+</html>

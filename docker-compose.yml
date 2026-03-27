@@ -1,0 +1,36 @@
+version: "3.9"
+
+services:
+  rootprint:
+    build: .
+    container_name: rootprint
+    ports:
+      - "127.0.0.1:7117:7117"   # Bind to localhost only — not public
+    volumes:
+      - ./data:/app/data         # JSON file persistence
+      - ./.env:/app/.env:ro      # Read-only env mount
+    environment:
+      - PORT=7117
+      - SWEEP_INTERVAL=600
+      - DEBUG=false
+      - ALLOWED_ORIGINS=http://localhost:7117
+    read_only: true              # Container filesystem read-only
+    tmpfs:
+      - /tmp                     # Writable tmp only
+    volumes:
+      - ./data:/app/data
+      - ./.env:/app/.env:ro
+    security_opt:
+      - no-new-privileges:true   # Prevent privilege escalation
+    cap_drop:
+      - ALL                      # Drop all Linux capabilities
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+# Zero external dependencies: no DB, no Redis, no Node, no npm
+# Run: docker compose up -d
+# Dashboard: http://localhost:7117
